@@ -1,6 +1,6 @@
 "use strict";
 const PROMPT = require('readline-sync');
-const IO = require('fs');  // For file I/O
+const IO = require('fs');
 
 let continueResponse;
 let people = [];
