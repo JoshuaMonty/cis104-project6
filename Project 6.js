@@ -92,7 +92,7 @@ function quitProgram() {
 function changeWeek() {
     let weekNumber = LIB.getNumber("Please Enter the Current Week #: ", true);
     if(weekNumber < 1) {
-        console.log("ERROR: Cute. How about a positive number?");
+        console.log("Enter a positive number");
         changeWeek();
     }
 }
