@@ -2,97 +2,85 @@
 const PROMPT = require('readline-sync');
 const IO = require('fs');
 
-let saveFolder = "curlup";
-let programRun = 1;
-let weekNumber = 1;
-let manager = new curlUpManager(saveFolder);
+let masterFile = [], transactionFile = [], errorReport = [];
 
-const MENU_DATA = new Map()
-    .set('A', ['Add Client', addPerson])
-    .set('B', ['Delete Client', deletePerson])
-    .set('C', ['Add Service', addTransaction])
-    .set('D', ['Delete Service', deleteTransaction])
-    .set('E', ['Print Personnel', printPersonnel])
-    .set('F', ['Print Transactions',printTransactions])
-    .set('G', ['Print Person Details', printPerson])
-    .set('H', ['Change Week', changeWeek])
-    .set('I', ['Save Data', saveData])
-    .set('J', ['Load Data', loadData])
-    .set('K', ['Quit Program', quitProgram]);
-
-function main() {
-    console.clear();
-    while(programRun) {
-        try {
-            program();
-        }
-        catch(err) {
-            console.log(err);
-        }
-    }
+function main(){
+    populateMasterFile();
+    populateTransactionFile();
+    calculateTotals();
+    printMasterFile();
+    printErrorReport();
+    printCouponReceivers();
+    writeMasterFile();
 }
 
 main();
 
-function doMenu() {
-    console.log(`------ ${manager.name} Menu -----`);
-    console.log(LIB.renderMenu(MENU_DATA));
-    console.log('--------------------------');
-    return LIB.getChoice("Please Enter a Choice: ", MENU_DATA.keys(), true);
+function populateMasterFile(){
+    let fileContents = IO.readFileSync(`masterfile.csv` , 'utf8');
+    let lines = fileContents.toString().split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++){
+        masterFile.push(lines[i].toString().split(/,/));
+    }
 }
 
-function program() {
-    let choice = doMenu();
-    MENU_DATA.get(choice)[1]();
+function populateTransactionFile(){
+    let fileContents = IO.readFileSync(`transactionfile.csv` , 'utf8');
+    let lines = fileContents.toString().split(/\r?\n/);
+    for (let i = 0; i < lines.length; i++){
+        transactionFile.push(lines[i].toString().split(/,/));
+    }
 }
 
-function addPerson() {
-    manager.addPerson();
+function calculateTotals(){
+    for (let i = 0; i < transactionFile.length; i++){
+        for (let j = 0; j < masterFile.length; j++){
+            if (transactionFile[i][0] == masterFile[j][0]) {
+                masterFile[j][3] = parseFloat(masterFile[j][3]) + parseFloat(transactionFile[i][2]);
+                errorReport[i] = transactionFile[i][0];
+            }
+        }
+    }
 }
 
-function deletePerson() {
-    manager.deletePerson();
+function printMasterFile(){
+    console.log(`MasterFile:\n`);
+    for (let i = 0; i < masterFile.length; i++) {
+        for (let j = 0; j < 4; j++){
+            console.log(`\t` + masterFile[i][j]);
+        }
+        console.log(`\n`);
+    }
 }
 
-function addTransaction() {
-    manager.addTransaction();
+function printErrorReport() {
+    console.log(`Missing IDs:`);
+    for (let i = 0; i < transactionFile.length; i++) {
+        if (errorReport[i] == null) {
+            console.log(`\n\t${transactionFile[i][0]}`);
+        }
+    }
 }
 
-function deleteTransaction() {
-    manager.deleteTransaction();
+function printCouponReceivers() {
+    console.log(`\nCoupon Receivers:`);
+    for (let i = 0; i < masterFile.length; i++) {
+        if (masterFile[i][3] >= 750){
+            console.log(`\n\tCongratulations, ${masterFile[i][1]} ${masterFile[i][2]}! You spent way too much at this place. Here's a coupon.`);
+        }
+    }
 }
 
-function printPersonnel() {
-    console.log(manager.printPersonnel());
-    LIB.pressEnter();
-}
-
-function printTransactions() {
-    console.log(manager.printTransactions());
-    LIB.pressEnter();
-}
-
-function printPerson() {
-    console.log(manager.printPerson());
-    LIB.pressEnter();
-}
-
-function saveData() {
-    manager.save();
-}
-
-function loadData() {
-    manager.load();
-}
-
-function quitProgram() {
-    programRun = 0;
-}
-
-function changeWeek() {
-    let weekNumber = LIB.getNumber("Please Enter the Current Week #: ", true);
-    if(weekNumber < 1) {
-        console.log("Enter a positive number");
-        changeWeek();
+function writeMasterFile() {
+    const COLUMNS = 4;
+    for (let i = 0; i < masterFile.length; i++) {
+        for (let j = 0; j < COLUMNS; j++) {
+            if (j < COLUMNS - 1) {
+                IO.appendFileSync(`updatedMasterFile.csv`, `${masterFile[i][j]},`, 'utf8');
+            } else {
+                IO.appendFileSync(`updatedMasterFile.csv`, masterFile[i][j], 'utf8');
+            }
+        }
+        IO.appendFileSync(`updatedMasterFile.csv`, "\n", 'utf8');
     }
 }
