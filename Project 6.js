@@ -2,7 +2,9 @@
 const PROMPT = require('readline-sync');
 const IO = require('fs');
 
-let masterFile = [], transactionFile = [], errorReport = [];
+let masterFile = [];
+let transactionFile = [];
+let errorReport = [];
 
 function main(){
     populateMasterFile();
