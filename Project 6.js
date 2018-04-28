@@ -68,7 +68,7 @@ function printCouponReceivers() {
     console.log(`\nCoupon Receivers:`);
     for (let i = 0; i < masterFile.length; i++) {
         if (masterFile[i][3] >= 750){
-            console.log(`\n\tCongratulations, ${masterFile[i][1]} ${masterFile[i][2]}! You spent way too much at this place. Here's a coupon.`);
+            console.log(`\n\tCongratulations, ${masterFile[i][1]} ${masterFile[i][2]}! You spent too much at the salon. Here's a coupon.`);
         }
     }
 }
